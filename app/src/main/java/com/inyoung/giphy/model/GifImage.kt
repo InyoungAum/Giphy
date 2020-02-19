@@ -1,6 +1,10 @@
 package com.inyoung.giphy.model
 
 data class GifImage(
-    val fixedHeight: Image,
-    val fixedHeightStill: Image
+    val type: String,
+    val id: String,
+    val url: String,
+    val title: String,
+    val importDatetime: String,
+    val images: Image
 )

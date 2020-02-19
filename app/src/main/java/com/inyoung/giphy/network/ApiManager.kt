@@ -26,7 +26,8 @@ object ApiManager {
     private val RETROFIT = Retrofit.Builder()
         .baseUrl(BASE_URL)
         .client(HTTP_CLIENT)
-        .addConverterFactory(GSON_CONVERTER_FACTORY).build()
+        .addConverterFactory(GSON_CONVERTER_FACTORY)
+        .build()
 
-    public fun getSearchService() = RETROFIT.create(SearchService::class.java)
+    fun getSearchService() = RETROFIT.create(SearchService::class.java)
 }
