@@ -3,4 +3,11 @@
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
+
+    <color name="giphy_red">#FF5159</color>
+    <color name="giphy_purple">#9F4EFF</color>
+    <color name="giphy_blue">#5BEFFF</color>
+    <color name="giphy_green">#42FFAA</color>
+    <color name="giphy_yellow">#FFE96D</color>
+
 </resources>

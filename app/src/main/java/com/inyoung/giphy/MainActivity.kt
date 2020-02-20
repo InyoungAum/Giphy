@@ -1,13 +1,10 @@
 package com.inyoung.giphy
 
 import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.inyoung.giphy.Constants.API_KEY
-import com.inyoung.giphy.model.GifImage
 import com.inyoung.giphy.model.SearchResponse
 import com.inyoung.giphy.network.ApiManager
 import com.inyoung.giphy.view.SearchImageAdapter
@@ -15,8 +12,11 @@ import kotlinx.android.synthetic.main.activity_main.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import android.util.DisplayMetrics
 
 class MainActivity : Activity() {
+    private val SPAN_COUNT = 2
+    private val IMAGE_LIMIT = 50
     private val recyclerView by lazy { findViewById<RecyclerView>(R.id.recycler_view) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,14 +24,13 @@ class MainActivity : Activity() {
         setContentView(R.layout.activity_main)
         setView()
         search("car")
-
     }
 
     private fun search(query: String) {
         ApiManager.getSearchService().checkAppVersion(
             API_KEY,
             query,
-            10,
+            IMAGE_LIMIT,
             0,
             "",
             "ko",
@@ -56,9 +55,16 @@ class MainActivity : Activity() {
 
     private fun setView() {
         recycler_view.apply {
-            adapter = SearchImageAdapter(listOf())
+            val metrics = DisplayMetrics()
+            windowManager.defaultDisplay.getMetrics(metrics)
+
+            adapter = SearchImageAdapter(
+                listOf(),
+                metrics,
+                SPAN_COUNT
+            )
             layoutManager = StaggeredGridLayoutManager(
-                2, StaggeredGridLayoutManager.VERTICAL
+                SPAN_COUNT, StaggeredGridLayoutManager.VERTICAL
             )
             setHasFixedSize(true)
         }
