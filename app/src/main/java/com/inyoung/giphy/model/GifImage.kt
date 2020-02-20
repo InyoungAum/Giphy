@@ -6,5 +6,7 @@ data class GifImage(
     val url: String,
     val title: String,
     val importDatetime: String,
-    val images: Image
-)
+    val images: Image?
+) {
+    constructor() : this("", "", "" ,"", "" , null)
+}

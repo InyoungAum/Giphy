@@ -13,10 +13,14 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import android.util.DisplayMetrics
+import com.inyoung.giphy.model.GifImage
 
 class MainActivity : Activity() {
-    private val SPAN_COUNT = 2
-    private val IMAGE_LIMIT = 50
+    companion object {
+        private const val SPAN_COUNT = 2
+        private const val IMAGE_LIMIT = 50
+    }
+    private var currentOffset = 0
     private val recyclerView by lazy { findViewById<RecyclerView>(R.id.recycler_view) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,7 +35,7 @@ class MainActivity : Activity() {
             API_KEY,
             query,
             IMAGE_LIMIT,
-            0,
+            currentOffset,
             "",
             "ko",
             "ran"
@@ -42,7 +46,17 @@ class MainActivity : Activity() {
             ) {
                 if (response.isSuccessful) {
                     response.body()?.let {
-                        (recyclerView.adapter as SearchImageAdapter).setImages(it.images)
+                        val adapter = (recyclerView.adapter as SearchImageAdapter)
+                        if (adapter.getImages().isEmpty()) {
+                            adapter.setImages(it.images)
+                            adapter.getImages().add(GifImage())
+                            adapter.notifyDataSetChanged()
+                        } else {
+                            adapter.getImages().dropLast(1)
+                            adapter.getImages().addAll(it.images)
+                            adapter.getImages().add(GifImage())
+                            adapter.notifyDataSetChanged()
+                        }
                     }
                 }
             }
@@ -59,7 +73,7 @@ class MainActivity : Activity() {
             windowManager.defaultDisplay.getMetrics(metrics)
 
             adapter = SearchImageAdapter(
-                listOf(),
+                mutableListOf(),
                 metrics,
                 SPAN_COUNT
             )
@@ -67,6 +81,21 @@ class MainActivity : Activity() {
                 SPAN_COUNT, StaggeredGridLayoutManager.VERTICAL
             )
             setHasFixedSize(true)
+            addOnScrollListener(object: RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+
+                    val layoutManager = recyclerView.layoutManager as StaggeredGridLayoutManager
+                    val totalItemCount = layoutManager!!.itemCount
+                    val lastVisible = layoutManager.findLastCompletelyVisibleItemPositions(null).last()
+
+                    if (lastVisible >= totalItemCount - 1) {
+                        currentOffset++
+                        search("car")
+                        stopScroll()
+                    }
+                }
+            })
         }
     }
 }
