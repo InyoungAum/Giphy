@@ -1,43 +1,47 @@
-package com.inyoung.giphy
+package com.inyoung.giphy.fragment
 
-import android.app.Activity
 import android.os.Bundle
 import android.text.TextUtils
+import android.util.DisplayMetrics
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.ImageView
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import com.inyoung.giphy.Constants.API_KEY
+import com.inyoung.giphy.Constants
+import com.inyoung.giphy.R
 import com.inyoung.giphy.model.SearchResponse
 import com.inyoung.giphy.network.ApiManager
 import com.inyoung.giphy.view.SearchImageAdapter
+import kotlinx.android.synthetic.main.fragment_search.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import android.util.DisplayMetrics
-import android.widget.EditText
-import android.widget.ImageView
-import androidx.core.widget.ContentLoadingProgressBar
-import com.inyoung.giphy.model.GifImage
 
-class MainActivity : Activity() {
+class SearchFragment : Fragment() {
     companion object {
         private const val SPAN_COUNT = 2
         private const val IMAGE_OFFSET_COUNT = 15
     }
     private var currentOffset = 0
     private var query: String = ""
-    private val recyclerView by lazy { findViewById<RecyclerView>(R.id.recycler_view) }
-    private val searchEditText by lazy { findViewById<EditText>(R.id.edit_search) }
-    private val searchButton by lazy { findViewById<ImageView>(R.id.button_search) }
+    private val recyclerView by lazy { recycler_view }
+    private val searchEditText by lazy { edit_search }
+    private val searchButton by lazy { button_search }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        setView()
-    }
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ) = inflater.inflate(R.layout.fragment_search, null)
+
 
     private fun search(query: String) {
         ApiManager.getSearchService().checkAppVersion(
-            API_KEY,
+            Constants.API_KEY,
             query,
             IMAGE_OFFSET_COUNT,
             currentOffset,
@@ -64,10 +68,15 @@ class MainActivity : Activity() {
         })
     }
 
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        setView()
+    }
+
     private fun setView() {
         recyclerView.apply {
             val metrics = DisplayMetrics()
-            windowManager.defaultDisplay.getMetrics(metrics)
+            activity?.windowManager?.defaultDisplay?.getMetrics(metrics)
 
             adapter = SearchImageAdapter(mutableListOf(), metrics, SPAN_COUNT)
             layoutManager = StaggeredGridLayoutManager(

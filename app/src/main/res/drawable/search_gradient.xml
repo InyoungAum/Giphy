@@ -4,6 +4,4 @@
         android:startColor="@color/giphy_purple"
         android:endColor="@color/colorAccent"
         android:angle="45" />
-    <corners
-        android:radius="2dp" />
 </shape>
