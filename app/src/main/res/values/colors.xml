@@ -10,4 +10,7 @@
     <color name="giphy_green">#42FFAA</color>
     <color name="giphy_yellow">#FFE96D</color>
 
+    <color name="black">#000000</color>
+    <color name="white">#eeeeee</color>
+
 </resources>

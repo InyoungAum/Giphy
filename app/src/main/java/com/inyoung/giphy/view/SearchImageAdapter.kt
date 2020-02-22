@@ -24,9 +24,16 @@ class SearchImageAdapter(
         private const val VIEW_TYPE_ITEM = 0
         private const val VIEW_TYPE_LOADER = 1
     }
-    fun getImages() = images
-    fun setImages(images: MutableList<GifImage>) {
-        this.images = images
+
+    fun addImages(images: List<GifImage>) {
+        this.images.apply {
+            if (isNotEmpty()) {
+                dropLast(1)
+            }
+            addAll(images)
+            // add loading progress
+            add(GifImage())
+        }
         notifyDataSetChanged()
     }
 
@@ -78,7 +85,7 @@ class SearchImageAdapter(
         fun bind(image: GifImage) {
             val imageWidth = displayMetrics.widthPixels / spanCount
             val imageHeight = image.images?.fixedWidth?.let {
-                (imageWidth  * it.height.toInt()) / it.width.toInt()
+                (imageWidth * it.height.toInt()) / it.width.toInt()
             }
             //TODO: null check 대충한거 수정 하자
             imageView.apply {

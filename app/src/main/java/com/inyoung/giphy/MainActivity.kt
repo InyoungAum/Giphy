@@ -2,17 +2,20 @@ package com.inyoung.giphy
 
 import android.app.Activity
 import android.os.Bundle
+import android.text.TextUtils
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.inyoung.giphy.Constants.API_KEY
 import com.inyoung.giphy.model.SearchResponse
 import com.inyoung.giphy.network.ApiManager
 import com.inyoung.giphy.view.SearchImageAdapter
-import kotlinx.android.synthetic.main.activity_main.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import android.util.DisplayMetrics
+import android.widget.EditText
+import android.widget.ImageView
+import androidx.core.widget.ContentLoadingProgressBar
 import com.inyoung.giphy.model.GifImage
 
 class MainActivity : Activity() {
@@ -21,14 +24,15 @@ class MainActivity : Activity() {
         private const val IMAGE_OFFSET_COUNT = 15
     }
     private var currentOffset = 0
-    private var query: String = "car"
+    private var query: String = ""
     private val recyclerView by lazy { findViewById<RecyclerView>(R.id.recycler_view) }
+    private val searchEditText by lazy { findViewById<EditText>(R.id.edit_search) }
+    private val searchButton by lazy { findViewById<ImageView>(R.id.button_search) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setView()
-        search(query)
     }
 
     private fun search(query: String) {
@@ -48,12 +52,7 @@ class MainActivity : Activity() {
                 if (response.isSuccessful) {
                     response.body()?.let {
                         (recyclerView.adapter as SearchImageAdapter).apply {
-                            if (getImages().isNotEmpty()) {
-                                getImages().dropLast(1)
-                            }
-                            getImages().addAll(it.images)
-                            getImages().add(GifImage())
-                            notifyDataSetChanged()
+                            addImages(it.images)
                         }
                     }
                 }
@@ -66,15 +65,11 @@ class MainActivity : Activity() {
     }
 
     private fun setView() {
-        recycler_view.apply {
+        recyclerView.apply {
             val metrics = DisplayMetrics()
             windowManager.defaultDisplay.getMetrics(metrics)
 
-            adapter = SearchImageAdapter(
-                mutableListOf(),
-                metrics,
-                SPAN_COUNT
-            )
+            adapter = SearchImageAdapter(mutableListOf(), metrics, SPAN_COUNT)
             layoutManager = StaggeredGridLayoutManager(
                 SPAN_COUNT, StaggeredGridLayoutManager.VERTICAL
             )
@@ -94,6 +89,16 @@ class MainActivity : Activity() {
                     }
                 }
             })
+        }
+
+        searchButton.setOnClickListener {
+            val currentQuery = searchEditText.text.toString()
+            if (currentQuery != query || currentOffset != IMAGE_OFFSET_COUNT) {
+                if (!TextUtils.isEmpty(currentQuery)) {
+                    query = currentQuery
+                    search(query)
+                }
+            }
         }
     }
 }
