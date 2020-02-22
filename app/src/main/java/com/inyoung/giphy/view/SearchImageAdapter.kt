@@ -13,6 +13,7 @@ import com.bumptech.glide.Glide
 import com.inyoung.giphy.model.GifImage
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.inyoung.giphy.R
+import kotlinx.android.synthetic.main.view_search_image.view.*
 
 class SearchImageAdapter(
     private var images: MutableList<GifImage>,
@@ -55,6 +56,12 @@ class SearchImageAdapter(
         }
         else (viewHolder as ItemViewHolder).bind(images[position])
 
+    override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
+        super.onViewRecycled(holder)
+        if (holder is ItemViewHolder) {
+            Glide.with(holder.itemView.context).clear(holder.itemView.image_view)
+        }
+    }
 
     private fun isLastItem(position: Int) = position == itemCount - 1
 
@@ -82,6 +89,7 @@ class SearchImageAdapter(
             image.images?.fixedWidth?.let {
                 Glide.with(itemView.context)
                     .load(it.url)
+                    .override(imageWidth, imageHeight ?: 0)
                     .placeholder(placeHolders[layoutPosition % 5])
                     .into(imageView)
             }

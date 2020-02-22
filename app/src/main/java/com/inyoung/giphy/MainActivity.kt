@@ -18,23 +18,24 @@ import com.inyoung.giphy.model.GifImage
 class MainActivity : Activity() {
     companion object {
         private const val SPAN_COUNT = 2
-        private const val IMAGE_LIMIT = 50
+        private const val IMAGE_OFFSET_COUNT = 15
     }
     private var currentOffset = 0
+    private var query: String = "car"
     private val recyclerView by lazy { findViewById<RecyclerView>(R.id.recycler_view) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setView()
-        search("car")
+        search(query)
     }
 
     private fun search(query: String) {
         ApiManager.getSearchService().checkAppVersion(
             API_KEY,
             query,
-            IMAGE_LIMIT,
+            IMAGE_OFFSET_COUNT,
             currentOffset,
             "",
             "ko",
@@ -46,16 +47,13 @@ class MainActivity : Activity() {
             ) {
                 if (response.isSuccessful) {
                     response.body()?.let {
-                        val adapter = (recyclerView.adapter as SearchImageAdapter)
-                        if (adapter.getImages().isEmpty()) {
-                            adapter.setImages(it.images)
-                            adapter.getImages().add(GifImage())
-                            adapter.notifyDataSetChanged()
-                        } else {
-                            adapter.getImages().dropLast(1)
-                            adapter.getImages().addAll(it.images)
-                            adapter.getImages().add(GifImage())
-                            adapter.notifyDataSetChanged()
+                        (recyclerView.adapter as SearchImageAdapter).apply {
+                            if (getImages().isNotEmpty()) {
+                                getImages().dropLast(1)
+                            }
+                            getImages().addAll(it.images)
+                            getImages().add(GifImage())
+                            notifyDataSetChanged()
                         }
                     }
                 }
@@ -86,12 +84,12 @@ class MainActivity : Activity() {
                     super.onScrolled(recyclerView, dx, dy)
 
                     val layoutManager = recyclerView.layoutManager as StaggeredGridLayoutManager
-                    val totalItemCount = layoutManager!!.itemCount
+                    val totalItemCount = layoutManager.itemCount
                     val lastVisible = layoutManager.findLastCompletelyVisibleItemPositions(null).last()
 
                     if (lastVisible >= totalItemCount - 1) {
-                        currentOffset++
-                        search("car")
+                        currentOffset += IMAGE_OFFSET_COUNT
+                        search(query)
                         stopScroll()
                     }
                 }
