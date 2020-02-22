@@ -16,10 +16,15 @@ import com.inyoung.giphy.R
 import kotlinx.android.synthetic.main.view_search_image.view.*
 
 class SearchImageAdapter(
-    private var images: MutableList<GifImage>,
-    private var displayMetrics: DisplayMetrics,
-    private var spanCount: Int
+    private val images: MutableList<GifImage>,
+    private val displayMetrics: DisplayMetrics,
+    private val spanCount: Int,
+    private val onItemClickListener: OnItemClickListener? = null
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    interface OnItemClickListener {
+        fun onItemClick(id: String)
+    }
+
     companion object {
         private const val VIEW_TYPE_ITEM = 0
         private const val VIEW_TYPE_LOADER = 1
@@ -91,6 +96,7 @@ class SearchImageAdapter(
             imageView.apply {
                 layoutParams.width = imageWidth
                 layoutParams.height = imageHeight ?: 0
+                setOnClickListener { onItemClickListener?.onItemClick(image.id) }
             }
 
             image.images?.fixedWidth?.let {

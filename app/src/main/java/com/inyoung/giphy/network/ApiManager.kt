@@ -29,5 +29,6 @@ object ApiManager {
         .addConverterFactory(GSON_CONVERTER_FACTORY)
         .build()
 
-    fun getSearchService() = RETROFIT.create(SearchService::class.java)
+    fun getSearchService(): SearchService = RETROFIT.create(SearchService::class.java)
+    fun getDetailService(): DetailService = RETROFIT.create(DetailService::class.java)
 }

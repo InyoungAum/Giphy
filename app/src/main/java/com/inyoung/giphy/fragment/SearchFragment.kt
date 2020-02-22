@@ -1,5 +1,6 @@
 package com.inyoung.giphy.fragment
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
 import android.util.DisplayMetrics
@@ -12,7 +13,9 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.inyoung.giphy.Constants
+import com.inyoung.giphy.Constants.KEY_IMAGE_ID
 import com.inyoung.giphy.R
+import com.inyoung.giphy.activity.DetailGifActivity
 import com.inyoung.giphy.model.SearchResponse
 import com.inyoung.giphy.network.ApiManager
 import com.inyoung.giphy.view.SearchImageAdapter
@@ -28,6 +31,7 @@ class SearchFragment : Fragment() {
     }
     private var currentOffset = 0
     private var query: String = ""
+
     private val recyclerView by lazy { recycler_view }
     private val searchEditText by lazy { edit_search }
     private val searchButton by lazy { button_search }
@@ -36,7 +40,7 @@ class SearchFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ) = inflater.inflate(R.layout.fragment_search, null)
+    ): View = inflater.inflate(R.layout.fragment_search, null)
 
 
     private fun search(query: String) {
@@ -78,7 +82,17 @@ class SearchFragment : Fragment() {
             val metrics = DisplayMetrics()
             activity?.windowManager?.defaultDisplay?.getMetrics(metrics)
 
-            adapter = SearchImageAdapter(mutableListOf(), metrics, SPAN_COUNT)
+            adapter = SearchImageAdapter(mutableListOf(), metrics, SPAN_COUNT,
+                object : SearchImageAdapter.OnItemClickListener {
+                    override fun onItemClick(id: String) {
+                        startActivity(
+                            Intent(activity, DetailGifActivity::class.java).apply {
+                                putExtra(KEY_IMAGE_ID, id)
+                            }
+                        )
+                    }
+                })
+
             layoutManager = StaggeredGridLayoutManager(
                 SPAN_COUNT, StaggeredGridLayoutManager.VERTICAL
             )
