@@ -7,8 +7,6 @@ import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
-import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
@@ -16,7 +14,7 @@ import com.inyoung.giphy.Constants
 import com.inyoung.giphy.Constants.KEY_IMAGE_ID
 import com.inyoung.giphy.R
 import com.inyoung.giphy.activity.DetailGifActivity
-import com.inyoung.giphy.model.SearchResponse
+import com.inyoung.giphy.model.ImageListResponse
 import com.inyoung.giphy.network.ApiManager
 import com.inyoung.giphy.view.SearchImageAdapter
 import kotlinx.android.synthetic.main.fragment_search.*
@@ -44,7 +42,7 @@ class SearchFragment : Fragment() {
 
 
     private fun search(query: String) {
-        ApiManager.getSearchService().checkAppVersion(
+        ApiManager.getImageService().getImagesByQuery(
             Constants.API_KEY,
             query,
             IMAGE_OFFSET_COUNT,
@@ -52,10 +50,10 @@ class SearchFragment : Fragment() {
             "",
             "ko",
             "ran"
-        ).enqueue(object : Callback<SearchResponse> {
+        ).enqueue(object : Callback<ImageListResponse> {
             override fun onResponse(
-                call: Call<SearchResponse>,
-                response: Response<SearchResponse>
+                call: Call<ImageListResponse>,
+                response: Response<ImageListResponse>
             ) {
                 if (response.isSuccessful) {
                     response.body()?.let {
@@ -66,7 +64,7 @@ class SearchFragment : Fragment() {
                 }
             }
 
-            override fun onFailure(call: Call<SearchResponse>, t: Throwable) {
+            override fun onFailure(call: Call<ImageListResponse>, t: Throwable) {
 
             }
         })

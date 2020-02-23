@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.inyoung.giphy.Constants
 import com.inyoung.giphy.R
-import com.inyoung.giphy.model.DetailResponse
+import com.inyoung.giphy.model.ImageResponse
 import com.inyoung.giphy.model.LikeImage
 import com.inyoung.giphy.network.ApiManager
 import io.realm.Realm
@@ -29,17 +29,17 @@ class DetailGifActivity : AppCompatActivity() {
 
         val imageId = intent.getStringExtra(Constants.KEY_IMAGE_ID)
         getImage(imageId)
-        findLike(imageId)
+        findLikeImage(imageId)
         button_back.setOnClickListener { finish() }
-        button_like.setOnClickListener { like(imageId) }
+        button_like.setOnClickListener { changeImageLike(imageId) }
     }
 
-    private fun findLike(id: String) {
+    private fun findLikeImage(id: String) {
         val ret = realm.where<LikeImage>().equalTo("id", id).findFirst()
         likeImage = ret?.let { realm.copyFromRealm(ret) }
     }
 
-    private fun like(id: String) {
+    private fun changeImageLike(id: String) {
         realm.executeTransactionAsync(Realm.Transaction {
             if (likeImage == null) {
                 likeImage = it.createObject(LikeImage::class.java, id)
@@ -47,16 +47,16 @@ class DetailGifActivity : AppCompatActivity() {
                 likeImage!!.like = !likeImage!!.like
             }
         }, Realm.Transaction.OnSuccess {
-            Log.d("like","call success ${likeImage?.like}")
+            Log.d("changeImageLike","call success ${likeImage?.like}")
         })
     }
 
     private fun getImage(id: String) {
-        ApiManager.getDetailService().getImageDetail(id, Constants.API_KEY, "ran")
-            .enqueue(object : Callback<DetailResponse> {
+        ApiManager.getImageService().getSingleImage(id, Constants.API_KEY, "ran")
+            .enqueue(object : Callback<ImageResponse> {
                 override fun onResponse(
-                    call: Call<DetailResponse>,
-                    response: Response<DetailResponse>
+                    call: Call<ImageResponse>,
+                    response: Response<ImageResponse>
                 ) {
                     if (response.isSuccessful) {
                         response.body()?.let {
@@ -68,7 +68,7 @@ class DetailGifActivity : AppCompatActivity() {
                     }
                 }
 
-                override fun onFailure(call: Call<DetailResponse>, t: Throwable) {
+                override fun onFailure(call: Call<ImageResponse>, t: Throwable) {
 
                 }
         })
