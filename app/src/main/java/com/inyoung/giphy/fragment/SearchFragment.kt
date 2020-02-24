@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
 import android.util.DisplayMetrics
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,7 +17,7 @@ import com.inyoung.giphy.R
 import com.inyoung.giphy.activity.DetailGifActivity
 import com.inyoung.giphy.model.ImageListResponse
 import com.inyoung.giphy.network.ApiManager
-import com.inyoung.giphy.view.SearchImageAdapter
+import com.inyoung.giphy.view.ImageAdapter
 import kotlinx.android.synthetic.main.fragment_search.*
 import retrofit2.Call
 import retrofit2.Callback
@@ -26,6 +27,7 @@ class SearchFragment : Fragment() {
     companion object {
         private const val SPAN_COUNT = 2
         private const val IMAGE_OFFSET_COUNT = 15
+        private var load = false
     }
     private var currentOffset = 0
     private var query: String = ""
@@ -40,16 +42,16 @@ class SearchFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View = inflater.inflate(R.layout.fragment_search, null)
 
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        setView()
+    }
 
     private fun search(query: String) {
         ApiManager.getImageService().getImagesByQuery(
-            Constants.API_KEY,
             query,
             IMAGE_OFFSET_COUNT,
-            currentOffset,
-            "",
-            "ko",
-            "ran"
+            currentOffset
         ).enqueue(object : Callback<ImageListResponse> {
             override fun onResponse(
                 call: Call<ImageListResponse>,
@@ -57,22 +59,19 @@ class SearchFragment : Fragment() {
             ) {
                 if (response.isSuccessful) {
                     response.body()?.let {
-                        (recyclerView.adapter as SearchImageAdapter).apply {
+                        (recyclerView.adapter as ImageAdapter).apply {
                             addImages(it.images)
                         }
                     }
                 }
+                load = false
             }
 
             override fun onFailure(call: Call<ImageListResponse>, t: Throwable) {
-
+                currentOffset -= IMAGE_OFFSET_COUNT
+                load = false
             }
         })
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        setView()
     }
 
     private fun setView() {
@@ -80,8 +79,8 @@ class SearchFragment : Fragment() {
             val metrics = DisplayMetrics()
             activity?.windowManager?.defaultDisplay?.getMetrics(metrics)
 
-            adapter = SearchImageAdapter(mutableListOf(), metrics, SPAN_COUNT,
-                object : SearchImageAdapter.OnItemClickListener {
+            adapter = ImageAdapter(mutableListOf(), metrics, SPAN_COUNT,
+                object : ImageAdapter.OnItemClickListener {
                     override fun onItemClick(id: String) {
                         startActivity(
                             Intent(activity, DetailGifActivity::class.java).apply {
@@ -101,9 +100,11 @@ class SearchFragment : Fragment() {
 
                     val layoutManager = recyclerView.layoutManager as StaggeredGridLayoutManager
                     val totalItemCount = layoutManager.itemCount
-                    val lastVisible = layoutManager.findLastCompletelyVisibleItemPositions(null).last()
+                    val lastVisible = layoutManager.findLastCompletelyVisibleItemPositions(null)
 
-                    if (lastVisible >= totalItemCount - 1) {
+                    if (lastVisible.contains(totalItemCount - 1) && dy > 0 && !load) {
+                        load = true
+                        (adapter as ImageAdapter).loadImage()
                         currentOffset += IMAGE_OFFSET_COUNT
                         search(query)
                         stopScroll()

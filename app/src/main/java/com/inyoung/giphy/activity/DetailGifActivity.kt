@@ -52,7 +52,7 @@ class DetailGifActivity : AppCompatActivity() {
     }
 
     private fun getImage(id: String) {
-        ApiManager.getImageService().getSingleImage(id, Constants.API_KEY, "ran")
+        ApiManager.getImageService().getSingleImage(id)
             .enqueue(object : Callback<ImageResponse> {
                 override fun onResponse(
                     call: Call<ImageResponse>,

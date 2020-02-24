@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 
 
 object ApiManager {
-    private val BASE_URL = "https://api.giphy.com/v1/gifs/"
+    private val BASE_URL = "https://api.giphy.com/v1/"
     private val GSON_BUILDER = GsonBuilder()
         .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
     private val GSON = GSON_BUILDER.create()

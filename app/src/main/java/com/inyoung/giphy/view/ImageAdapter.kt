@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.inyoung.giphy.R
 import kotlinx.android.synthetic.main.view_search_image.view.*
 
-class SearchImageAdapter(
+class ImageAdapter(
     private val images: MutableList<GifImage>,
     private val displayMetrics: DisplayMetrics,
     private val spanCount: Int,
@@ -28,16 +28,21 @@ class SearchImageAdapter(
     companion object {
         private const val VIEW_TYPE_ITEM = 0
         private const val VIEW_TYPE_LOADER = 1
+        private val dummy = GifImage()
+    }
+
+    fun loadImage() {
+        // add loading progress
+        images.add(dummy)
+        notifyDataSetChanged()
     }
 
     fun addImages(images: List<GifImage>) {
         this.images.apply {
             if (isNotEmpty()) {
-                dropLast(1)
+                remove(dummy)
             }
             addAll(images)
-            // add loading progress
-            add(GifImage())
         }
         notifyDataSetChanged()
     }
@@ -55,13 +60,13 @@ class SearchImageAdapter(
         }
 
     override fun getItemViewType(position: Int) =
-        if (isLastItem(position)) VIEW_TYPE_LOADER
+        if (images[position].images == null) VIEW_TYPE_LOADER
         else VIEW_TYPE_ITEM
 
     override fun getItemCount() = images.size
 
     override fun onBindViewHolder(viewHolder: RecyclerView.ViewHolder, position: Int) =
-        if (isLastItem(position)) {
+        if (isLoadingView(position)) {
             val layoutParams =
                 viewHolder.itemView.layoutParams as StaggeredGridLayoutManager.LayoutParams
             layoutParams.setFullSpan(true)
@@ -75,7 +80,7 @@ class SearchImageAdapter(
         }
     }
 
-    private fun isLastItem(position: Int) = position == itemCount - 1
+    private fun isLoadingView(position: Int) = images[position].images == null
 
     inner class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val imageView = itemView.findViewById<ImageView>(R.id.image_view)
