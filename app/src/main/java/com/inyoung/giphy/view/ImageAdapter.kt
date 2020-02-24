@@ -93,7 +93,7 @@ class ImageAdapter(
         )
 
         fun bind(image: GifImage) {
-            val imageWidth = displayMetrics.widthPixels / spanCount
+            val imageWidth = displayMetrics!!.widthPixels / spanCount
             val imageHeight = image.images?.fixedWidth?.let {
                 (imageWidth * it.height.toInt()) / it.width.toInt()
             }

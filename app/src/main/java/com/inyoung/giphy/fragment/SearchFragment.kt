@@ -3,15 +3,14 @@ package com.inyoung.giphy.fragment
 import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
-import android.util.DisplayMetrics
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import com.inyoung.giphy.Constants
 import com.inyoung.giphy.Constants.KEY_IMAGE_ID
 import com.inyoung.giphy.R
 import com.inyoung.giphy.activity.DetailGifActivity
@@ -19,7 +18,6 @@ import com.inyoung.giphy.model.ImageListResponse
 import com.inyoung.giphy.network.ApiManager
 import com.inyoung.giphy.view.ImageAdapter
 import com.inyoung.giphy.view.LoadmoreRecyclerView
-import kotlinx.android.synthetic.main.fragment_search.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -32,20 +30,23 @@ class SearchFragment : Fragment() {
     private var currentOffset = 0
     private var query: String = ""
 
-    private val recyclerView by lazy { recycler_view }
-    private val searchEditText by lazy { edit_search }
-    private val searchButton by lazy { button_search }
+    private lateinit var recyclerView: LoadmoreRecyclerView
+    private lateinit var searchEditText: EditText
+    private lateinit var searchButton: ImageView
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View = inflater.inflate(R.layout.fragment_search, null)
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        setView()
+    ): View {
+        val view = inflater.inflate(R.layout.fragment_search, container, false)
+        recyclerView = view.findViewById(R.id.recycler_view)
+        searchEditText = view.findViewById(R.id.edit_search)
+        searchButton = view.findViewById(R.id.button_search)
+        setView(view)
+        return view
     }
+
 
     private fun search(query: String) {
         ApiManager.getImageService().getImagesByQuery(
@@ -73,12 +74,9 @@ class SearchFragment : Fragment() {
         })
     }
 
-    private fun setView() {
+    private fun setView(view: View) {
         recyclerView.apply {
-            val metrics = DisplayMetrics()
-            activity?.windowManager?.defaultDisplay?.getMetrics(metrics)
-
-            adapter = ImageAdapter(mutableListOf(), metrics, SPAN_COUNT,
+            adapter = ImageAdapter(mutableListOf(), resources.displayMetrics, SPAN_COUNT,
                 object : ImageAdapter.OnItemClickListener {
                     override fun onItemClick(id: String) {
                         startActivity(

@@ -2,7 +2,6 @@ package com.inyoung.giphy.fragment
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,7 +18,6 @@ import com.inyoung.giphy.view.ImageAdapter
 import com.inyoung.giphy.view.LoadmoreRecyclerView
 import io.realm.Realm
 import io.realm.kotlin.where
-import kotlinx.android.synthetic.main.fragment_favorites.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -35,20 +33,20 @@ class FavoritesFragment : Fragment() {
     private lateinit var realm: Realm
     private lateinit var likeImages: List<LikeImage>
 
-    private val recyclerView by lazy { recycler_view }
+    private lateinit var recyclerView: LoadmoreRecyclerView
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View = inflater.inflate(R.layout.fragment_favorites, null)
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    ): View {
+        val view = inflater.inflate(R.layout.fragment_favorites, container, false)
+        recyclerView = view.findViewById(R.id.recycler_view)
         realm = Realm.getDefaultInstance()
         loadFavoriteImages()
         setView()
         getImages(generateImageIds())
+        return view
     }
 
     private fun loadFavoriteImages() {
@@ -99,10 +97,7 @@ class FavoritesFragment : Fragment() {
 
     private fun setView() {
         recyclerView.apply {
-            val metrics = DisplayMetrics()
-            activity?.windowManager?.defaultDisplay?.getMetrics(metrics)
-
-            adapter = ImageAdapter(mutableListOf(), metrics, SPAN_COUNT,
+            adapter = ImageAdapter(mutableListOf(), resources.displayMetrics, SPAN_COUNT,
                 object : ImageAdapter.OnItemClickListener {
                     override fun onItemClick(id: String) {
                         startActivity(
