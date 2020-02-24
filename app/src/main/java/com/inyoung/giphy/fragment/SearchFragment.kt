@@ -18,6 +18,7 @@ import com.inyoung.giphy.activity.DetailGifActivity
 import com.inyoung.giphy.model.ImageListResponse
 import com.inyoung.giphy.network.ApiManager
 import com.inyoung.giphy.view.ImageAdapter
+import com.inyoung.giphy.view.LoadmoreRecyclerView
 import kotlinx.android.synthetic.main.fragment_search.*
 import retrofit2.Call
 import retrofit2.Callback
@@ -64,12 +65,11 @@ class SearchFragment : Fragment() {
                         }
                     }
                 }
-                load = false
+                recyclerView.loadFinish(true)
             }
 
             override fun onFailure(call: Call<ImageListResponse>, t: Throwable) {
-                currentOffset -= IMAGE_OFFSET_COUNT
-                load = false
+                recyclerView.loadFinish(false)
             }
         })
     }
@@ -94,21 +94,26 @@ class SearchFragment : Fragment() {
                 SPAN_COUNT, StaggeredGridLayoutManager.VERTICAL
             )
             setHasFixedSize(true)
+
+            setOnLoadListener(object: LoadmoreRecyclerView.OnLoadListener{
+                override fun onLoad() {
+                    (adapter as ImageAdapter).loadImage()
+                    currentOffset += IMAGE_OFFSET_COUNT
+                    search(query)
+                    stopScroll()
+                }
+
+                override fun onFinish(isSuccess: Boolean) {
+                    if (!isSuccess) {
+                        currentOffset -= IMAGE_OFFSET_COUNT
+                    }
+                }
+            })
+
             addOnScrollListener(object: RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                     super.onScrolled(recyclerView, dx, dy)
-
-                    val layoutManager = recyclerView.layoutManager as StaggeredGridLayoutManager
-                    val totalItemCount = layoutManager.itemCount
-                    val lastVisible = layoutManager.findLastCompletelyVisibleItemPositions(null)
-
-                    if (lastVisible.contains(totalItemCount - 1) && dy > 0 && !load) {
-                        load = true
-                        (adapter as ImageAdapter).loadImage()
-                        currentOffset += IMAGE_OFFSET_COUNT
-                        search(query)
-                        stopScroll()
-                    }
+                    loadmore(dy)
                 }
             })
         }
