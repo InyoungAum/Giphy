@@ -16,6 +16,7 @@ import com.inyoung.giphy.model.ImageListResponse
 import com.inyoung.giphy.model.LikeImage
 import com.inyoung.giphy.network.ApiManager
 import com.inyoung.giphy.view.ImageAdapter
+import com.inyoung.giphy.view.LoadmoreRecyclerView
 import io.realm.Realm
 import io.realm.kotlin.where
 import kotlinx.android.synthetic.main.fragment_favorites.*
@@ -85,12 +86,12 @@ class FavoritesFragment : Fragment() {
                                     addImages(it.images)
                                 }
                             }
-
                         }
+                        recyclerView.loadFinish(true)
                     }
 
                     override fun onFailure(call: Call<ImageListResponse>, t: Throwable) {
-                        currentOffset -= IMAGE_OFFSET_COUNT
+                        recyclerView.loadFinish(false)
                     }
                 })
         }
@@ -115,20 +116,24 @@ class FavoritesFragment : Fragment() {
             layoutManager = StaggeredGridLayoutManager(
                 SPAN_COUNT, StaggeredGridLayoutManager.VERTICAL
             )
+            setOnLoadListener(object : LoadmoreRecyclerView.OnLoadListener{
+                override fun onLoad() {
+                    currentOffset += IMAGE_OFFSET_COUNT
+                    getImages(query)
+                    stopScroll()
+                }
+
+                override fun onFinish(isSuccess: Boolean) {
+                    if (!isSuccess) {
+                        currentOffset -= IMAGE_OFFSET_COUNT
+                    }
+                }
+            })
             setHasFixedSize(true)
             addOnScrollListener(object: RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                     super.onScrolled(recyclerView, dx, dy)
-
-                    val layoutManager = recyclerView.layoutManager as StaggeredGridLayoutManager
-                    val totalItemCount = layoutManager.itemCount
-                    val lastVisible = layoutManager.findLastCompletelyVisibleItemPositions(null).last()
-
-                    if (lastVisible >= totalItemCount - 1) {
-                        currentOffset += IMAGE_OFFSET_COUNT
-                        getImages(query)
-                        stopScroll()
-                    }
+                    loadmore(dy)
                 }
             })
         }

@@ -28,7 +28,6 @@ class SearchFragment : Fragment() {
     companion object {
         private const val SPAN_COUNT = 2
         private const val IMAGE_OFFSET_COUNT = 15
-        private var load = false
     }
     private var currentOffset = 0
     private var query: String = ""
