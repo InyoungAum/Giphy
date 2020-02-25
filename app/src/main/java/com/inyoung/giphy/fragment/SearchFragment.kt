@@ -1,5 +1,6 @@
 package com.inyoung.giphy.fragment
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
@@ -7,14 +8,18 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.inyoung.giphy.Constants.KEY_IMAGE_ID
 import com.inyoung.giphy.R
 import com.inyoung.giphy.activity.DetailGifActivity
+import com.inyoung.giphy.activity.hideActiveKeyboard
 import com.inyoung.giphy.model.ImageListResponse
 import com.inyoung.giphy.network.ApiManager
 import com.inyoung.giphy.view.ImageAdapter
@@ -117,13 +122,31 @@ class SearchFragment : Fragment() {
         }
 
         searchButton.setOnClickListener {
-            val currentQuery = searchEditText.text.toString()
-            if (currentQuery != query || currentOffset != IMAGE_OFFSET_COUNT) {
-                if (!TextUtils.isEmpty(currentQuery)) {
-                    val needRefresh = query != currentQuery
-                    query = currentQuery
-                    recyclerView.load(needRefresh = needRefresh)
+            searchButtonClick()
+        }
+
+        searchEditText.setOnEditorActionListener { v, actionId, event ->
+            if (v.id == R.id.edit_search) {
+                when(actionId) {
+                    EditorInfo.IME_ACTION_SEARCH -> {
+                        searchButtonClick()
+                        true
+                    }
+                    else -> false
                 }
+
+            } else true
+        }
+    }
+
+    private fun searchButtonClick() {
+        val currentQuery = searchEditText.text.toString()
+        if (currentQuery != query || currentOffset != IMAGE_OFFSET_COUNT) {
+            if (!TextUtils.isEmpty(currentQuery)) {
+                val needRefresh = query != currentQuery
+                query = currentQuery
+                recyclerView.load(needRefresh = needRefresh)
+                (activity as AppCompatActivity).hideActiveKeyboard()
             }
         }
     }
