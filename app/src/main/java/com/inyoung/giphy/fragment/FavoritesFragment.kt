@@ -2,6 +2,7 @@ package com.inyoung.giphy.fragment
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -43,16 +44,28 @@ class FavoritesFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_favorites, container, false)
         recyclerView = view.findViewById(R.id.recycler_view)
         realm = Realm.getDefaultInstance()
-        loadFavoriteImages()
         setView()
-        getImages(generateImageIds())
+        loadFavoriteImages()
         return view
     }
 
-    private fun loadFavoriteImages() {
+    override fun onResume() {
+        super.onResume()
+        recyclerView.adapter
+        loadFavoriteImages(true)
+    }
+
+    private fun loadFavoriteImages(reload: Boolean = false) {
         realm.let {
-            likeImages = it.copyFromRealm(
-                it.where<LikeImage>().findAll()
+            it.executeTransactionAsync(
+                Realm.Transaction { innerRealm ->
+                    likeImages = innerRealm.copyFromRealm(
+                        innerRealm.where<LikeImage>().equalTo("like",true).findAll()
+                    )
+                },
+                Realm.Transaction.OnSuccess {
+                    getImages(generateImageIds(), reload)
+                }
             )
         }
     }
@@ -70,7 +83,7 @@ class FavoritesFragment : Fragment() {
         } else null
     }
 
-    fun getImages(ids: String?) {
+    private fun getImages(ids: String?, reload: Boolean = false) {
         ids?.let {
             ApiManager.getImageService().getImagesById(it)
                 .enqueue(object : Callback<ImageListResponse> {
@@ -81,7 +94,7 @@ class FavoritesFragment : Fragment() {
                         if (response.isSuccessful) {
                             response.body()?.let {
                                 (recyclerView.adapter as ImageAdapter).apply {
-                                    addImages(it.images)
+                                    addImages(it.images, reload)
                                 }
                             }
                         }

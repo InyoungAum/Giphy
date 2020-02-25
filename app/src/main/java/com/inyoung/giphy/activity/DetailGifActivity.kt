@@ -37,18 +37,29 @@ class DetailGifActivity : AppCompatActivity() {
     private fun findLikeImage(id: String) {
         val ret = realm.where<LikeImage>().equalTo("id", id).findFirst()
         likeImage = ret?.let { realm.copyFromRealm(ret) }
+        changeLikeButton()
     }
 
     private fun changeImageLike(id: String) {
         realm.executeTransactionAsync(Realm.Transaction {
             if (likeImage == null) {
-                likeImage = it.createObject(LikeImage::class.java, id)
+                val ret = it.createObject(LikeImage::class.java, id)
+                likeImage = realm.copyFromRealm(ret)
             } else {
                 likeImage!!.like = !likeImage!!.like
             }
         }, Realm.Transaction.OnSuccess {
-            Log.d("changeImageLike","call success ${likeImage?.like}")
+            changeLikeButton()
         })
+    }
+
+    private fun changeLikeButton() {
+        likeImage?.let {
+            button_like.setImageResource(
+                if (it.like) R.drawable.ic_dislike
+                else R.drawable.ic_like
+            )
+        }
     }
 
     private fun getImage(id: String) {

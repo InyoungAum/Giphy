@@ -37,10 +37,14 @@ class ImageAdapter(
         notifyDataSetChanged()
     }
 
-    fun addImages(images: List<GifImage>) {
+    fun addImages(images: List<GifImage>, reload: Boolean = false) {
         this.images.apply {
             if (isNotEmpty()) {
-                remove(dummy)
+                if (!reload) {
+                    remove(dummy)
+                } else {
+                    this.clear()
+                }
             }
             addAll(images)
         }

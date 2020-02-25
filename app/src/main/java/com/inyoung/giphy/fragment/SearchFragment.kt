@@ -43,7 +43,7 @@ class SearchFragment : Fragment() {
         recyclerView = view.findViewById(R.id.recycler_view)
         searchEditText = view.findViewById(R.id.edit_search)
         searchButton = view.findViewById(R.id.button_search)
-        setView(view)
+        setView()
         return view
     }
 
@@ -74,7 +74,7 @@ class SearchFragment : Fragment() {
         })
     }
 
-    private fun setView(view: View) {
+    private fun setView() {
         recyclerView.apply {
             adapter = ImageAdapter(mutableListOf(), resources.displayMetrics, SPAN_COUNT,
                 object : ImageAdapter.OnItemClickListener {
