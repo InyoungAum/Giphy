@@ -12,6 +12,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.inyoung.giphy.model.GifImage
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
+import com.bumptech.glide.request.transition.DrawableCrossFadeFactory
 import com.inyoung.giphy.R
 import kotlinx.android.synthetic.main.view_search_image.view.*
 
@@ -28,6 +31,7 @@ class ImageAdapter(
     companion object {
         private const val VIEW_TYPE_ITEM = 0
         private const val VIEW_TYPE_LOADER = 1
+        private const val IMAGE_DOWNSCALE_SIZE = 2
         private val dummy = GifImage()
     }
 
@@ -75,7 +79,7 @@ class ImageAdapter(
                 viewHolder.itemView.layoutParams as StaggeredGridLayoutManager.LayoutParams
             layoutParams.setFullSpan(true)
         }
-        else (viewHolder as ItemViewHolder).bind(images[position])
+        else (viewHolder as ItemViewHolder).bind(position)
 
     override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
         super.onViewRecycled(holder)
@@ -88,6 +92,7 @@ class ImageAdapter(
 
     inner class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val imageView = itemView.findViewById<ImageView>(R.id.image_view)
+        private val crossFade = DrawableCrossFadeFactory.Builder().setCrossFadeEnabled(true).build()
         private val placeHolders = listOf(
             ColorDrawable(Color.parseColor("#FF5159")),
             ColorDrawable(Color.parseColor("#9F4EFF")),
@@ -96,8 +101,9 @@ class ImageAdapter(
             ColorDrawable(Color.parseColor("#FFE96D"))
         )
 
-        fun bind(image: GifImage) {
-            val imageWidth = displayMetrics!!.widthPixels / spanCount
+        fun bind(position: Int) {
+            val image = images[position]
+            val imageWidth = displayMetrics.widthPixels / spanCount
             val imageHeight = image.images?.fixedWidth?.let {
                 (imageWidth * it.height.toInt()) / it.width.toInt()
             }
@@ -105,13 +111,25 @@ class ImageAdapter(
             imageView.apply {
                 layoutParams.width = imageWidth
                 layoutParams.height = imageHeight ?: 0
+
                 setOnClickListener { onItemClickListener?.onItemClick(image.id) }
+
+
+                if (position % 2 == 0) {
+                    setPadding(4, 4, 8, 4)
+                } else {
+                    setPadding(8, 4, 4, 4)
+                }
             }
 
             image.images?.fixedWidth?.let {
                 Glide.with(itemView.context)
                     .load(it.url)
-                    .override(imageWidth, imageHeight ?: 0)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .transition(withCrossFade(crossFade))
+                    .override(
+                        imageWidth / IMAGE_DOWNSCALE_SIZE,
+                        (imageHeight ?: 0) / IMAGE_DOWNSCALE_SIZE)
                     .placeholder(placeHolders[layoutPosition % 5])
                     .into(imageView)
             }
