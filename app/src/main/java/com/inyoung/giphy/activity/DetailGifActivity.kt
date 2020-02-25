@@ -44,9 +44,10 @@ class DetailGifActivity : AppCompatActivity() {
         realm.executeTransactionAsync(Realm.Transaction {
             if (likeImage == null) {
                 val ret = it.createObject(LikeImage::class.java, id)
-                likeImage = realm.copyFromRealm(ret)
+                likeImage = it.copyFromRealm(ret)
             } else {
                 likeImage!!.like = !likeImage!!.like
+                it.copyToRealmOrUpdate(likeImage)
             }
         }, Realm.Transaction.OnSuccess {
             changeLikeButton()
