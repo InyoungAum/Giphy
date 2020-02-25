@@ -35,7 +35,7 @@ class ImageAdapter(
         private val dummy = GifImage()
     }
 
-    fun loadImage() {
+    fun prepareLoadImage() {
         // add loading progress
         images.add(dummy)
         notifyDataSetChanged()
@@ -44,9 +44,8 @@ class ImageAdapter(
     fun addImages(images: List<GifImage>, reload: Boolean = false) {
         this.images.apply {
             if (isNotEmpty()) {
-                if (!reload) {
-                    remove(dummy)
-                } else {
+                remove(dummy)
+                if (reload) {
                     this.clear()
                 }
             }

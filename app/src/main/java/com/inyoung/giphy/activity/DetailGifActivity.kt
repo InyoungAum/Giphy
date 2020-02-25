@@ -47,7 +47,7 @@ class DetailGifActivity : AppCompatActivity() {
                 likeImage = it.copyFromRealm(ret)
             } else {
                 likeImage!!.like = !likeImage!!.like
-                it.copyToRealmOrUpdate(likeImage)
+                it.copyToRealmOrUpdate(likeImage!!)
             }
         }, Realm.Transaction.OnSuccess {
             changeLikeButton()

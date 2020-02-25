@@ -3,6 +3,7 @@ package com.inyoung.giphy.fragment
 import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -48,7 +49,7 @@ class SearchFragment : Fragment() {
     }
 
 
-    private fun search(query: String) {
+    private fun search(query: String, reload: Boolean = false) {
         ApiManager.getImageService().getImagesByQuery(
             query,
             IMAGE_OFFSET_COUNT,
@@ -61,7 +62,7 @@ class SearchFragment : Fragment() {
                 if (response.isSuccessful) {
                     response.body()?.let {
                         (recyclerView.adapter as ImageAdapter).apply {
-                            addImages(it.images)
+                            addImages(it.images, reload)
                         }
                     }
                 }
@@ -93,10 +94,10 @@ class SearchFragment : Fragment() {
             setHasFixedSize(true)
 
             setOnLoadListener(object: LoadmoreRecyclerView.OnLoadListener{
-                override fun onLoad() {
-                    (adapter as ImageAdapter).loadImage()
+                override fun onLoad(needRefresh: Boolean) {
+                    (adapter as ImageAdapter).prepareLoadImage()
+                    search(query, needRefresh)
                     currentOffset += IMAGE_OFFSET_COUNT
-                    search(query)
                     stopScroll()
                 }
 
@@ -110,7 +111,7 @@ class SearchFragment : Fragment() {
             addOnScrollListener(object: RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                     super.onScrolled(recyclerView, dx, dy)
-                    loadmore(dy)
+                    load(dy)
                 }
             })
         }
@@ -119,8 +120,9 @@ class SearchFragment : Fragment() {
             val currentQuery = searchEditText.text.toString()
             if (currentQuery != query || currentOffset != IMAGE_OFFSET_COUNT) {
                 if (!TextUtils.isEmpty(currentQuery)) {
+                    val needRefresh = query != currentQuery
                     query = currentQuery
-                    search(query)
+                    recyclerView.load(needRefresh = needRefresh)
                 }
             }
         }

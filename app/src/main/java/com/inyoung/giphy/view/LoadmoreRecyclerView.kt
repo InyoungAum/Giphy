@@ -10,7 +10,7 @@ class LoadmoreRecyclerView(
     attributeSet: AttributeSet
 ) : RecyclerView(context, attributeSet) {
     interface OnLoadListener {
-        fun onLoad()
+        fun onLoad(needRefresh: Boolean)
         fun onFinish(isSuccess: Boolean)
     }
 
@@ -30,10 +30,12 @@ class LoadmoreRecyclerView(
         return lastVisible.contains(totalItemCount - 1) && dy > 0 && !isLoad
     }
 
-    fun loadmore(dy: Int) {
-        if (canLoadMore(dy)) {
-            onLoadListener?.onLoad()
-            isLoad = true
+    fun load(dy: Int = 0, needRefresh: Boolean = false) {
+        post {
+            if (canLoadMore(dy) || needRefresh) {
+                onLoadListener?.onLoad(needRefresh)
+                isLoad = true
+            }
         }
     }
 
@@ -41,6 +43,4 @@ class LoadmoreRecyclerView(
         onLoadListener?.onFinish(isSuccess)
         isLoad = false
     }
-
-
 }

@@ -2,7 +2,6 @@ package com.inyoung.giphy.fragment
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -45,13 +44,11 @@ class FavoritesFragment : Fragment() {
         recyclerView = view.findViewById(R.id.recycler_view)
         realm = Realm.getDefaultInstance()
         setView()
-        loadFavoriteImages()
         return view
     }
 
     override fun onResume() {
         super.onResume()
-        recyclerView.adapter
         loadFavoriteImages(true)
     }
 
@@ -125,7 +122,7 @@ class FavoritesFragment : Fragment() {
                 SPAN_COUNT, StaggeredGridLayoutManager.VERTICAL
             )
             setOnLoadListener(object : LoadmoreRecyclerView.OnLoadListener{
-                override fun onLoad() {
+                override fun onLoad(needRefresh: Boolean) {
                     currentOffset += IMAGE_OFFSET_COUNT
                     getImages(query)
                     stopScroll()
@@ -141,7 +138,7 @@ class FavoritesFragment : Fragment() {
             addOnScrollListener(object: RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                     super.onScrolled(recyclerView, dx, dy)
-                    loadmore(dy)
+                    load(dy)
                 }
             })
         }
