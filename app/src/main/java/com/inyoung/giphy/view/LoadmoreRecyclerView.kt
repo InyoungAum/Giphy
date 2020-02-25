@@ -2,6 +2,7 @@ package com.inyoung.giphy.view
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 
@@ -17,6 +18,30 @@ class LoadmoreRecyclerView(
     private var isLoad = false
 
     private var onLoadListener: OnLoadListener? = null
+
+    private var emptyView: View? = null
+
+    private val adapterDataObserver = object : AdapterDataObserver() {
+        override fun onChanged() {
+            super.onChanged()
+            changeViewVisibility()
+        }
+
+        override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+            super.onItemRangeInserted(positionStart, itemCount)
+            changeViewVisibility()
+        }
+
+        override fun onItemRangeRemoved(positionStart: Int, itemCount: Int) {
+            super.onItemRangeRemoved(positionStart, itemCount)
+            changeViewVisibility()
+        }
+    }
+
+    override fun setAdapter(adapter: Adapter<*>?) {
+        super.setAdapter(adapter)
+        adapter?.registerAdapterDataObserver(adapterDataObserver)
+    }
 
     fun setOnLoadListener(onLoadListener: OnLoadListener) {
         this.onLoadListener = onLoadListener
@@ -43,4 +68,16 @@ class LoadmoreRecyclerView(
         onLoadListener?.onFinish(isSuccess)
         isLoad = false
     }
+
+    private fun isDataNotEmpty() = adapter?.itemCount != 0
+
+    fun setEmptyView(emptyView: View) {
+        this.emptyView = emptyView
+    }
+
+    private fun changeViewVisibility() {
+        emptyView?.visibility = if(!isDataNotEmpty()) View.VISIBLE else View.GONE
+        visibility = if(!isDataNotEmpty()) View.GONE else View.VISIBLE
+    }
+
 }

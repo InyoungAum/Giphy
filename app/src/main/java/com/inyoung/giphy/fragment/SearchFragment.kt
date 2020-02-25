@@ -12,6 +12,7 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
@@ -39,6 +40,7 @@ class SearchFragment : Fragment() {
     private lateinit var recyclerView: LoadmoreRecyclerView
     private lateinit var searchEditText: EditText
     private lateinit var searchButton: ImageView
+    private lateinit var emptyView: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,10 +48,7 @@ class SearchFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val view = inflater.inflate(R.layout.fragment_search, container, false)
-        recyclerView = view.findViewById(R.id.recycler_view)
-        searchEditText = view.findViewById(R.id.edit_search)
-        searchButton = view.findViewById(R.id.button_search)
-        setView()
+        setView(view)
         return view
     }
 
@@ -80,7 +79,12 @@ class SearchFragment : Fragment() {
         })
     }
 
-    private fun setView() {
+    private fun setView(view: View) {
+        recyclerView = view.findViewById(R.id.recycler_view)
+        searchEditText = view.findViewById(R.id.edit_search)
+        searchButton = view.findViewById(R.id.button_search)
+        emptyView = view.findViewById(R.id.empty_view)
+
         recyclerView.apply {
             adapter = ImageAdapter(mutableListOf(), resources.displayMetrics, SPAN_COUNT,
                 object : ImageAdapter.OnItemClickListener {
@@ -101,6 +105,7 @@ class SearchFragment : Fragment() {
             setOnLoadListener(object: LoadmoreRecyclerView.OnLoadListener{
                 override fun onLoad(needRefresh: Boolean) {
                     (adapter as ImageAdapter).prepareLoadImage()
+                    changeEmptyView()
                     search(query, needRefresh)
                     currentOffset += IMAGE_OFFSET_COUNT
                     stopScroll()
@@ -119,6 +124,8 @@ class SearchFragment : Fragment() {
                     load(dy)
                 }
             })
+
+            setEmptyView(emptyView)
         }
 
         searchButton.setOnClickListener {
@@ -148,6 +155,24 @@ class SearchFragment : Fragment() {
                 recyclerView.load(needRefresh = needRefresh)
                 (activity as AppCompatActivity).hideActiveKeyboard()
             }
+        }
+    }
+
+    private fun changeEmptyView() {
+        if (TextUtils.isEmpty(query)) {
+            emptyView.text = "새로운 이미지를 찾아볼까요?"
+            emptyView.setCompoundDrawablesWithIntrinsicBounds(null,
+                resources.getDrawable(R.drawable.ic_search),
+                null ,
+                null
+            )
+        } else {
+            emptyView.text ="검색결과가 없어요"
+            emptyView.setCompoundDrawablesWithIntrinsicBounds(null,
+                resources.getDrawable(R.drawable.ic_no_result),
+                null ,
+                null
+            )
         }
     }
 }
