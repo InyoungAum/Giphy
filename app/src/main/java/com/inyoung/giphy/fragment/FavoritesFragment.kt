@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
@@ -34,6 +35,7 @@ class FavoritesFragment : Fragment() {
     private lateinit var likeImages: List<LikeImage>
 
     private lateinit var recyclerView: LoadmoreRecyclerView
+    private lateinit var emtpyView: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,6 +44,7 @@ class FavoritesFragment : Fragment() {
     ): View {
         val view = inflater.inflate(R.layout.fragment_favorites, container, false)
         recyclerView = view.findViewById(R.id.recycler_view)
+        emtpyView = view.findViewById(R.id.empty_view)
         realm = Realm.getDefaultInstance()
         setView()
         return view
@@ -134,15 +137,17 @@ class FavoritesFragment : Fragment() {
                     }
                 }
             })
+
             setHasFixedSize(true)
+
             addOnScrollListener(object: RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                     super.onScrolled(recyclerView, dx, dy)
                     load(dy)
                 }
             })
+
+            setEmptyView(emtpyView)
         }
     }
-
-
 }
