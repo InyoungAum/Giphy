@@ -7,6 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.inyoung.giphy.Constants
@@ -17,8 +19,8 @@ import com.inyoung.giphy.model.LikeImage
 import com.inyoung.giphy.network.ApiManager
 import com.inyoung.giphy.view.ImageAdapter
 import com.inyoung.giphy.view.LoadmoreRecyclerView
+import com.inyoung.giphy.viewmodel.FavoritesViewModel
 import io.realm.Realm
-import io.realm.kotlin.where
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -29,13 +31,24 @@ class FavoritesFragment : Fragment() {
         private const val IMAGE_OFFSET_COUNT = 15
     }
 
+    private lateinit var favoritesViewModel: FavoritesViewModel
+
     private var currentOffset = 0
     private var query: String = ""
     private lateinit var realm: Realm
-    private lateinit var likeImages: List<LikeImage>
 
     private lateinit var recyclerView: LoadmoreRecyclerView
-    private lateinit var emtpyView: TextView
+    private lateinit var emptyView: TextView
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        favoritesViewModel = ViewModelProviders.of(this)
+            .get(FavoritesViewModel::class.java)
+
+        favoritesViewModel.likeImages.observe(this, Observer {
+            getImages(generateImageIds(it), true)
+        })
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,33 +57,13 @@ class FavoritesFragment : Fragment() {
     ): View {
         val view = inflater.inflate(R.layout.fragment_favorites, container, false)
         recyclerView = view.findViewById(R.id.recycler_view)
-        emtpyView = view.findViewById(R.id.empty_view)
+        emptyView = view.findViewById(R.id.empty_view)
         realm = Realm.getDefaultInstance()
         setView()
         return view
     }
 
-    override fun onResume() {
-        super.onResume()
-        loadFavoriteImages(true)
-    }
-
-    private fun loadFavoriteImages(reload: Boolean = false) {
-        realm.let {
-            it.executeTransactionAsync(
-                Realm.Transaction { innerRealm ->
-                    likeImages = innerRealm.copyFromRealm(
-                        innerRealm.where<LikeImage>().equalTo("like",true).findAll()
-                    )
-                },
-                Realm.Transaction.OnSuccess {
-                    getImages(generateImageIds(), reload)
-                }
-            )
-        }
-    }
-
-    private fun generateImageIds(): String? {
+    private fun generateImageIds(likeImages: List<LikeImage>): String? {
         return if (likeImages.size > currentOffset) {
             val end = if (likeImages.size < currentOffset + IMAGE_OFFSET_COUNT) likeImages.size
                 else currentOffset + IMAGE_OFFSET_COUNT
@@ -147,7 +140,7 @@ class FavoritesFragment : Fragment() {
                 }
             })
 
-            setEmptyView(emtpyView)
+            setEmptyView(emptyView)
         }
     }
 }
