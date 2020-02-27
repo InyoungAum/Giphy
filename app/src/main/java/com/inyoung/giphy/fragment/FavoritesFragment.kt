@@ -47,6 +47,7 @@ class FavoritesFragment : Fragment() {
 
         favoritesViewModel.likeImages.observe(this, Observer {
             getImages(generateImageIds(it), true)
+            recyclerView.changeEmptyViewVisibility()
         })
     }
 

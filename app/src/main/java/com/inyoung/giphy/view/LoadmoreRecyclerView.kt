@@ -24,17 +24,17 @@ class LoadmoreRecyclerView(
     private val adapterDataObserver = object : AdapterDataObserver() {
         override fun onChanged() {
             super.onChanged()
-            changeViewVisibility()
+            changeEmptyViewVisibility()
         }
 
         override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
             super.onItemRangeInserted(positionStart, itemCount)
-            changeViewVisibility()
+            changeEmptyViewVisibility()
         }
 
         override fun onItemRangeRemoved(positionStart: Int, itemCount: Int) {
             super.onItemRangeRemoved(positionStart, itemCount)
-            changeViewVisibility()
+            changeEmptyViewVisibility()
         }
     }
 
@@ -75,7 +75,7 @@ class LoadmoreRecyclerView(
         this.emptyView = emptyView
     }
 
-    private fun changeViewVisibility() {
+    fun changeEmptyViewVisibility() {
         emptyView?.visibility = if(!isDataNotEmpty()) View.VISIBLE else View.GONE
         visibility = if(!isDataNotEmpty()) View.GONE else View.VISIBLE
     }

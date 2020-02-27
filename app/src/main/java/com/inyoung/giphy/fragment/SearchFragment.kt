@@ -1,15 +1,12 @@
 package com.inyoung.giphy.fragment
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
@@ -20,7 +17,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.inyoung.giphy.Constants.KEY_IMAGE_ID
 import com.inyoung.giphy.R
 import com.inyoung.giphy.activity.DetailGifActivity
-import com.inyoung.giphy.activity.hideActiveKeyboard
+import com.inyoung.giphy.hideActiveKeyboard
 import com.inyoung.giphy.model.ImageListResponse
 import com.inyoung.giphy.network.ApiManager
 import com.inyoung.giphy.view.ImageAdapter
@@ -41,6 +38,7 @@ class SearchFragment : Fragment() {
     private lateinit var searchEditText: EditText
     private lateinit var searchButton: ImageView
     private lateinit var emptyView: TextView
+    private lateinit var titleText: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -52,6 +50,14 @@ class SearchFragment : Fragment() {
         return view
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (!TextUtils.isEmpty(query)) {
+            recyclerView.load(needRefresh = true)
+        } else {
+            titleText.text = "Search"
+        }
+    }
 
     private fun search(query: String, reload: Boolean = false) {
         ApiManager.getImageService().getImagesByQuery(
@@ -68,6 +74,7 @@ class SearchFragment : Fragment() {
                         (recyclerView.adapter as ImageAdapter).apply {
                             addImages(it.images, reload)
                         }
+                        titleText.text = query
                     }
                 }
                 recyclerView.loadFinish(true)
@@ -84,6 +91,7 @@ class SearchFragment : Fragment() {
         searchEditText = view.findViewById(R.id.edit_search)
         searchButton = view.findViewById(R.id.button_search)
         emptyView = view.findViewById(R.id.empty_view)
+        titleText = view.findViewById(R.id.text_title)
 
         recyclerView.apply {
             adapter = ImageAdapter(mutableListOf(), resources.displayMetrics, SPAN_COUNT,
