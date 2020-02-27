@@ -110,7 +110,6 @@ class ImageAdapter(
             val imageHeight = image.images?.fixedWidth?.let {
                 (imageWidth * it.height.toInt()) / it.width.toInt()
             }
-            //TODO: null check 대충한거 수정 하자
             imageView.apply {
                 layoutParams.width = imageWidth
                 layoutParams.height = imageHeight ?: 0
