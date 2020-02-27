@@ -54,8 +54,10 @@ class SearchFragment : Fragment() {
         super.onResume()
         if (!TextUtils.isEmpty(query)) {
             recyclerView.load(needRefresh = true)
+            currentOffset = 0
         } else {
             titleText.text = "Search"
+            currentOffset = 0
         }
     }
 
