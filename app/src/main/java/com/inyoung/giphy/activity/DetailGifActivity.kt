@@ -14,6 +14,7 @@ import kotlinx.android.synthetic.main.activity_detail_gif.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import android.content.Intent
 
 class DetailGifActivity : AppCompatActivity() {
     private val imageView by lazy { image_detail }
@@ -32,7 +33,10 @@ class DetailGifActivity : AppCompatActivity() {
             .of(this)
             .get(FavoritesViewModel::class.java)
 
-        likeImage = favoritesViewModel.findLikeImage(imageId)
+        likeImage = favoritesViewModel.findLikeImage(imageId)?.let{
+            changeLikeButton(it.like)
+            it
+        }
 
         getImage(imageId)
 
@@ -42,7 +46,7 @@ class DetailGifActivity : AppCompatActivity() {
 
     private fun likeImage(id: String) {
         if (likeImage != null) {
-            favoritesViewModel.changeLikeState(id)
+            favoritesViewModel.changeLikeState(likeImage!!)
         } else {
             favoritesViewModel.addImage(id)
             likeImage = favoritesViewModel.findLikeImage(id)
@@ -78,6 +82,18 @@ class DetailGifActivity : AppCompatActivity() {
 
                 }
         })
+    }
+
+    override fun finish() {
+        val intent = Intent().apply {
+            putExtra(Constants.KEY_IMAGE_ID, likeImage!!.id)
+        }
+        setResult(
+            if (likeImage!!.like) Constants.RESULT_LIKE
+                else Constants.RESULT_DISLIKE,
+            intent
+        )
+        super.finish()
     }
 }
 

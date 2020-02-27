@@ -9,20 +9,26 @@ import io.realm.Realm
 
 class FavoritesViewModel(application: Application) : AndroidViewModel(application) {
     private val realm = Realm.getDefaultInstance()
-    val likeImages: LiveData<List<LikeImage>>
-    
+    lateinit var likeImages: LiveData<List<LikeImage>>
     init {
+        loadLikeImage()
+    }
+
+    fun loadLikeImage() {
         likeImages = realm.likeImageDao().getLikeImages()
     }
 
     fun findLikeImage(id: String) =
         realm.likeImageDao().findLikeImage(id)
 
-    fun changeLikeState(id: String) =
-        realm.likeImageDao().changeLikeState(id)
+    fun changeLikeState(likeImage: LikeImage) =
+        realm.likeImageDao().changeLikeState(likeImage)
 
     fun addImage(id: String) =
         realm.likeImageDao().addNewLikeImage(id)
+
+    fun deleteImage(id: String) =
+        realm.likeImageDao().deleteLikeImage(id)
 
     override fun onCleared() {
         super.onCleared()

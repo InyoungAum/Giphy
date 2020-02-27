@@ -1,7 +1,12 @@
 package com.inyoung.giphy
 
 object Constants {
-    val API_KEY = "8cZ8JPbzQZc6NolK2LYHpsPQtjnD9v22"
+    const val API_KEY = "8cZ8JPbzQZc6NolK2LYHpsPQtjnD9v22"
 
-    val KEY_IMAGE_ID = "key_image_id"
+    const val KEY_IMAGE_ID = "key_image_id"
+
+    const val REQUEST_CHANGE_IMAGE_LIKE = 1
+
+    const val RESULT_LIKE = 1
+    const val RESULT_DISLIKE = 2
 }

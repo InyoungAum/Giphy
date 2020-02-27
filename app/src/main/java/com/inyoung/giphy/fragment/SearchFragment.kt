@@ -79,6 +79,7 @@ class SearchFragment : Fragment() {
                         titleText.text = query
                     }
                 }
+                currentOffset += IMAGE_OFFSET_COUNT
                 recyclerView.loadFinish(true)
             }
 
@@ -117,11 +118,11 @@ class SearchFragment : Fragment() {
                     (adapter as ImageAdapter).prepareLoadImage()
                     changeEmptyView()
                     search(query, needRefresh)
-                    currentOffset += IMAGE_OFFSET_COUNT
                     stopScroll()
                 }
 
                 override fun onFinish(isSuccess: Boolean) {
+                    (adapter as ImageAdapter).finishLoadImage()
                     if (!isSuccess) {
                         currentOffset -= IMAGE_OFFSET_COUNT
                     }

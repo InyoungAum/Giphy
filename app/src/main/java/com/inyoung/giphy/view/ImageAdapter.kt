@@ -41,17 +41,21 @@ class ImageAdapter(
         notifyDataSetChanged()
     }
 
+    fun finishLoadImage() {
+        images.remove(dummy)
+        notifyDataSetChanged()
+    }
+
     fun addImages(images: List<GifImage>, reload: Boolean = false) {
         this.images.apply {
             if (isNotEmpty()) {
-                remove(dummy)
                 if (reload) {
                     this.clear()
                 }
             }
             addAll(images)
         }
-        notifyDataSetChanged()
+        finishLoadImage()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =

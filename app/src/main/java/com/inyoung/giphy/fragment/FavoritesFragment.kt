@@ -20,7 +20,6 @@ import com.inyoung.giphy.network.ApiManager
 import com.inyoung.giphy.view.ImageAdapter
 import com.inyoung.giphy.view.LoadmoreRecyclerView
 import com.inyoung.giphy.viewmodel.FavoritesViewModel
-import io.realm.Realm
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -34,7 +33,6 @@ class FavoritesFragment : Fragment() {
     private lateinit var favoritesViewModel: FavoritesViewModel
 
     private var currentOffset = 0
-    private lateinit var realm: Realm
 
     private lateinit var recyclerView: LoadmoreRecyclerView
     private lateinit var emptyView: TextView
@@ -45,8 +43,7 @@ class FavoritesFragment : Fragment() {
             .get(FavoritesViewModel::class.java)
 
         favoritesViewModel.likeImages.observe(this, Observer {
-            getImages(generateImageIds(it), true)
-            recyclerView.changeEmptyViewVisibility()
+            loadLikeImages(it)
         })
     }
 
@@ -58,9 +55,14 @@ class FavoritesFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_favorites, container, false)
         recyclerView = view.findViewById(R.id.recycler_view)
         emptyView = view.findViewById(R.id.empty_view)
-        realm = Realm.getDefaultInstance()
         setView()
         return view
+    }
+
+    private fun loadLikeImages(likeImages: List<LikeImage>) {
+        currentOffset = 0
+        getImagesByIds(generateImageIds(likeImages), true)
+        recyclerView.changeEmptyViewVisibility()
     }
 
     private fun generateImageIds(likeImages: List<LikeImage>): String? {
@@ -76,7 +78,7 @@ class FavoritesFragment : Fragment() {
         } else null
     }
 
-    private fun getImages(ids: String?, reload: Boolean = false) {
+    private fun getImagesByIds(ids: String?, reload: Boolean = false) {
         ids?.let {
             ApiManager.getImageService().getImagesById(it)
                 .enqueue(object : Callback<ImageListResponse> {
@@ -91,6 +93,7 @@ class FavoritesFragment : Fragment() {
                                 }
                             }
                         }
+                        currentOffset += IMAGE_OFFSET_COUNT
                         recyclerView.loadFinish(true)
                     }
 
@@ -98,6 +101,9 @@ class FavoritesFragment : Fragment() {
                         recyclerView.loadFinish(false)
                     }
                 })
+        } ?: run {
+            recyclerView.loadFinish(false)
+
         }
     }
 
@@ -106,10 +112,10 @@ class FavoritesFragment : Fragment() {
             adapter = ImageAdapter(mutableListOf(), resources.displayMetrics, SPAN_COUNT,
                 object : ImageAdapter.OnItemClickListener {
                     override fun onItemClick(id: String) {
-                        startActivity(
+                        startActivityForResult(
                             Intent(activity, DetailGifActivity::class.java).apply {
                                 putExtra(Constants.KEY_IMAGE_ID, id)
-                            }
+                            }, Constants.REQUEST_CHANGE_IMAGE_LIKE
                         )
                     }
                 })
@@ -119,14 +125,17 @@ class FavoritesFragment : Fragment() {
             )
             setOnLoadListener(object : LoadmoreRecyclerView.OnLoadListener{
                 override fun onLoad(needRefresh: Boolean) {
+                    (adapter as ImageAdapter).prepareLoadImage()
                     favoritesViewModel.likeImages.value?.let {
-                        currentOffset += IMAGE_OFFSET_COUNT
-                        getImages(generateImageIds(it))
+                        getImagesByIds(generateImageIds(it))
                         stopScroll()
+                    } ?: run {
+                        recyclerView.loadFinish(true)
                     }
                 }
 
                 override fun onFinish(isSuccess: Boolean) {
+                    (adapter as ImageAdapter).finishLoadImage()
                     if (!isSuccess) {
                         currentOffset -= IMAGE_OFFSET_COUNT
                     }
@@ -143,6 +152,18 @@ class FavoritesFragment : Fragment() {
             })
 
             setEmptyView(emptyView)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == Constants.REQUEST_CHANGE_IMAGE_LIKE) {
+            if (resultCode == Constants.RESULT_DISLIKE) {
+                data?.getStringExtra(Constants.KEY_IMAGE_ID)?.let {
+                    favoritesViewModel.deleteImage(it)
+                    favoritesViewModel.loadLikeImage()
+                }
+            }
         }
     }
 }

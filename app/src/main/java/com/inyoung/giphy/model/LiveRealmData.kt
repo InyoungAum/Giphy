@@ -9,6 +9,9 @@ import io.realm.RealmModel
 class LiveRealmData<T : RealmModel>(
     private val results: RealmResults<T>
 ) : LiveData<RealmResults<T>>() {
+    init {
+        value = results
+    }
     private val listener =
         RealmChangeListener<RealmResults<T>> { results -> value = results }
 
