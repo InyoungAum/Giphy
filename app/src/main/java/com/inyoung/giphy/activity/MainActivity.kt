@@ -30,8 +30,16 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     override fun onClick(v: View?) {
         when(v?.id) {
-            R.id.button_search_tab -> fragmentTransaction(FRAGMENT_SEARCH)
-            R.id.button_like_tab -> fragmentTransaction(FRAGMENT_FAVORITES)
+            R.id.button_search_tab -> {
+                fragmentTransaction(FRAGMENT_SEARCH)
+                button_search_tab.setBackgroundColor(resources.getColor(R.color.white_22))
+                button_like_tab.setBackgroundColor(resources.getColor(R.color.transparent))
+            }
+            R.id.button_like_tab -> {
+                fragmentTransaction(FRAGMENT_FAVORITES)
+                button_like_tab.setBackgroundColor(resources.getColor(R.color.white_22))
+                button_search_tab.setBackgroundColor(resources.getColor(R.color.transparent))
+            }
         }
     }
 

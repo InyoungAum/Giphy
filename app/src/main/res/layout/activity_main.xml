@@ -20,6 +20,7 @@
         android:layout_height="wrap_content"
         android:src="@android:drawable/ic_menu_search"
         android:padding="8dp"
+        android:background="@color/white_22"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toLeftOf="@id/button_like_tab"/>
