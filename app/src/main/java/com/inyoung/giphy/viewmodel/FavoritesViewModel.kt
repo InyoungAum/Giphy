@@ -9,9 +9,11 @@ import io.realm.Realm
 
 class FavoritesViewModel(application: Application) : AndroidViewModel(application) {
     private val realm = Realm.getDefaultInstance()
-
     val likeImages: LiveData<List<LikeImage>>
-        get() = realm.likeImageDao().getLikeImages()
+    
+    init {
+        likeImages = realm.likeImageDao().getLikeImages()
+    }
 
     fun findLikeImage(id: String) =
         realm.likeImageDao().findLikeImage(id)

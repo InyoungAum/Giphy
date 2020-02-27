@@ -34,7 +34,6 @@ class FavoritesFragment : Fragment() {
     private lateinit var favoritesViewModel: FavoritesViewModel
 
     private var currentOffset = 0
-    private var query: String = ""
     private lateinit var realm: Realm
 
     private lateinit var recyclerView: LoadmoreRecyclerView
@@ -120,9 +119,11 @@ class FavoritesFragment : Fragment() {
             )
             setOnLoadListener(object : LoadmoreRecyclerView.OnLoadListener{
                 override fun onLoad(needRefresh: Boolean) {
-                    currentOffset += IMAGE_OFFSET_COUNT
-                    getImages(query)
-                    stopScroll()
+                    favoritesViewModel.likeImages.value?.let {
+                        currentOffset += IMAGE_OFFSET_COUNT
+                        getImages(generateImageIds(it))
+                        stopScroll()
+                    }
                 }
 
                 override fun onFinish(isSuccess: Boolean) {
